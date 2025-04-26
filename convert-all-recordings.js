@@ -90,9 +90,12 @@ fs.readdirSync(inputDir).forEach(file => {
       const recording = JSON.parse(fs.readFileSync(inputPath, 'utf-8'));
       const steps = recording.steps || [];
 
+      // 📛 Använd recording.title om det finns, annars baseName
+      const recordingName = recording.title || baseName;
+
       let codeLines = [];
-      codeLines.push(`describe('${baseName}', () => {`);
-      codeLines.push(`  it('ska återskapa inspelat flöde', () => {`);
+      codeLines.push(`describe('${recordingName}', () => {`);
+      codeLines.push(`  it('${recordingName}', () => {`);
 
       // 🔲 Lägg till viewport om inspelningen innehåller det
       if (recording.viewport && recording.viewport.width && recording.viewport.height) {

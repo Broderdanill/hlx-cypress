@@ -50,6 +50,7 @@ async function sendTestResults(token, testData) {
 
 async function main() {
   const resultsPath = path.join(__dirname, '../cypress/results.json');
+  const screenshotsDir = path.join(__dirname, '../cypress/screenshots');
   const reportsDir = path.join(__dirname, '../cypress/reports');
 
   if (!fs.existsSync(resultsPath)) {
@@ -69,16 +70,35 @@ async function main() {
 
       for (const suite of result.suites || []) {
         for (const test of suite.tests || []) {
+          const testName = test.title || 'okänd';
+          const fullTitle = test.fullTitle || test.title;
+          const SuiteTitle = test.SuiteTitle || test.title;
+          const status = test.state || (test.pass ? 'passed' : 'failed');
+          const duration = test.duration || 0;
+          const suiteTitle = suite.title || '';
+          const errorMessage = test.err?.message || '';
+
+          // 📸 Leta efter screenshot
+          let screenshotBase64 = '';
+          if (status === 'failed' && fs.existsSync(screenshotsDir)) {
+            const matchingScreenshot = findScreenshotFile(screenshotsDir, SuiteTitle, file);
+            if (matchingScreenshot) {
+              const imgBuffer = fs.readFileSync(matchingScreenshot);
+              screenshotBase64 = imgBuffer.toString('base64');
+            }
+          }
+
           const payload = {
             values: {
-              TestName: test.title || 'okänd',
-              FullTitle: test.fullTitle || test.title,
-              Status: test.state || (test.pass ? 'passed' : 'failed'),
-              DurationMs: test.duration || 0,
+              TestName: testName,
+              FullTitle: fullTitle,
+              Status: status,
+              DurationMs: duration,
               RunTime: runTime,
               FileName: file,
-              SuiteTitle: suite.title || '',
-              ErrorMessage: test.err?.message || ''
+              SuiteTitle: suiteTitle,
+              ErrorMessage: errorMessage,
+              ScreenshotBase64: screenshotBase64 // 📸 Lägg till Base64 screenshot här
             }
           };
 
@@ -110,6 +130,22 @@ async function main() {
   } catch (err) {
     console.error('❌ Något gick fel under processen:', err.message);
   }
+}
+
+// 📸 Hjälpfunktion för att hitta rätt screenshot baserat på testnamn
+function findScreenshotFile(baseDir, fullTitle, specFile) {
+  const normalizedTitle = fullTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const normalizedSpec = path.basename(specFile).replace(/\.[^/.]+$/, '').toLowerCase();
+  const specDir = path.join(baseDir, normalizedSpec);
+
+  if (!fs.existsSync(specDir)) return null;
+
+  const files = fs.readdirSync(specDir);
+  const match = files.find(file => file.toLowerCase().includes(normalizedTitle));
+  if (match) {
+    return path.join(specDir, match);
+  }
+  return null;
 }
 
 main();
