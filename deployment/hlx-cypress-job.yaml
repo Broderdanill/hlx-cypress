@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hlx-cypress-pod
+spec:
+  restartPolicy: Never
+  containers:
+    - name: hlx-cypress-container
+      image: hlx-cypress:latest
+      command: ["sh", "-c", "node scripts/fetch-recordings.js && npm run test:db"]
+      env:
+        - name: HELIX_URL
+          value: "http://arserver:8008"
+        - name: HELIX_USER
+          value: "cypress"
+        - name: HELIX_PASS
+          value: "cypress"
+        - name: HELIX_RECORDING_FORM
+          value: "hlx.cypress:Recordings"
+        - name: HELIX_FORM
+          value: "hlx.cypress:TestResults"
+      volumeMounts:
+        - mountPath: /app/cypress/reports
+          name: reports-temp
+        - mountPath: /app/cypress/e2e
+          name: tests-temp
+  volumes:
+    - name: reports-temp
+      emptyDir: {}
+    - name: tests-temp
+      emptyDir: {}
+  networks:
+    - name: helix
