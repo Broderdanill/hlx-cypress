@@ -17,6 +17,7 @@ if (!HELIX_URL || !HELIX_USER || !HELIX_PASS || !HELIX_FORM) {
   process.exit(1);
 }
 
+// 🛜 Logga in till Helix
 async function loginHelix() {
   try {
     const response = await axios.post(`${HELIX_URL}/api/jwt/login`, null, {
@@ -33,6 +34,7 @@ async function loginHelix() {
   }
 }
 
+// 📤 Skicka resultat till Helix
 async function sendTestResults(token, testData) {
   try {
     const response = await axios.post(`${HELIX_URL}/api/arsys/v1/entry/${HELIX_FORM}`, testData, {
@@ -48,6 +50,7 @@ async function sendTestResults(token, testData) {
   }
 }
 
+// 📦 Huvudfunktion
 async function main() {
   const resultsPath = path.join(__dirname, '../cypress/results.json');
   const screenshotsDir = path.join(__dirname, '../cypress/screenshots');
@@ -72,7 +75,6 @@ async function main() {
         for (const test of suite.tests || []) {
           const testName = test.title || 'okänd';
           const fullTitle = test.fullTitle || test.title;
-          const SuiteTitle = test.SuiteTitle || test.title;
           const status = test.state || (test.pass ? 'passed' : 'failed');
           const duration = test.duration || 0;
           const suiteTitle = suite.title || '';
@@ -80,11 +82,26 @@ async function main() {
 
           // 📸 Leta efter screenshot
           let screenshotBase64 = '';
+          let screenshotMissing = true;
+          
           if (status === 'failed' && fs.existsSync(screenshotsDir)) {
-            const matchingScreenshot = findScreenshotFile(screenshotsDir, SuiteTitle, file);
+            const matchingScreenshot = findScreenshotFile(screenshotsDir, file);
             if (matchingScreenshot) {
+              console.log(`🔎 Hittade screenshot: ${matchingScreenshot}`);
               const imgBuffer = fs.readFileSync(matchingScreenshot);
-              screenshotBase64 = imgBuffer.toString('base64');
+              let base64String = imgBuffer.toString('base64');
+
+              // 🧹 Om bilden är större än 500 KB, trimma den
+              const MAX_SIZE_BYTES = 500 * 1024;
+              if (Buffer.byteLength(base64String, 'base64') > MAX_SIZE_BYTES) {
+                console.warn('⚠️ Screenshot är för stor, skär ner Base64 till 500 KB.');
+                base64String = base64String.substring(0, MAX_SIZE_BYTES);
+              }
+
+              screenshotBase64 = base64String;
+              screenshotMissing = false;
+            } else {
+              console.warn(`⚠️ Ingen screenshot hittades för: ${fullTitle}`);
             }
           }
 
@@ -98,7 +115,8 @@ async function main() {
               FileName: file,
               SuiteTitle: suiteTitle,
               ErrorMessage: errorMessage,
-              ScreenshotBase64: screenshotBase64 // 📸 Lägg till Base64 screenshot här
+              ScreenshotBase64: screenshotBase64,
+              ScreenshotMissing: screenshotMissing // 🔥 Ny flagga!
             }
           };
 
@@ -132,20 +150,29 @@ async function main() {
   }
 }
 
-// 📸 Hjälpfunktion för att hitta rätt screenshot baserat på testnamn
-function findScreenshotFile(baseDir, fullTitle, specFile) {
-  const normalizedTitle = fullTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  const normalizedSpec = path.basename(specFile).replace(/\.[^/.]+$/, '').toLowerCase();
-  const specDir = path.join(baseDir, normalizedSpec);
+// 📸 Hjälpfunktion för att hitta rätt screenshot
+function findScreenshotFile(baseDir, specFile) {
+  const specDir = path.join(baseDir, path.basename(specFile));
 
-  if (!fs.existsSync(specDir)) return null;
+  if (!fs.existsSync(specDir)) {
+    console.warn(`⚠️ Ingen katalog hittades för spec: ${specDir}`);
+    return null;
+  }
 
   const files = fs.readdirSync(specDir);
-  const match = files.find(file => file.toLowerCase().includes(normalizedTitle));
-  if (match) {
-    return path.join(specDir, match);
+  const pngFiles = files.filter(file => file.toLowerCase().endsWith('.png'));
+
+  if (pngFiles.length > 0) {
+    console.log(`🔎 Hittade screenshot: ${pngFiles[0]}`);
+    return path.join(specDir, pngFiles[0]);
+  } else {
+    console.warn(`⚠️ Ingen .png-fil hittades i katalogen: ${specDir}`);
+    return null;
   }
-  return null;
 }
+
+
+
+
 
 main();
