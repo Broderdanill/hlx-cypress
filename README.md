@@ -1,7 +1,6 @@
 # hlx-cypress
 cypress container for BMC Helix Innovation Suite
 
-
 # Build image
 podman build -t hlx-cypress .
 

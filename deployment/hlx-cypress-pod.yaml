@@ -18,7 +18,7 @@ spec:
         - name: HELIX_PASS
           value: "cypress"
         - name: HELIX_RECORDING_FORM
-          value: "hlx.cypress:Recordings"
+          value: "hlx.cypress:Tests"
         - name: HELIX_FORM
           value: "hlx.cypress:TestResults"
         - name: PORT
