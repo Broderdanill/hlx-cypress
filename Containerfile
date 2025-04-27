@@ -59,4 +59,10 @@ RUN chmod +x scripts/*.js
 RUN chmod +x *.js
 
 # 7. Standardkommando när containern startar:
-CMD ["sh", "-c", "node scripts/fetch-recordings.js && npm run test:db"]
+# CMD ["sh", "-c", "node scripts/fetch-recordings.js && npm run test:db"]
+
+# 9. Öppna porten i containern
+EXPOSE 3000
+
+# 10. Starta API-servern som CMD
+CMD ["npm", "run", "api"]

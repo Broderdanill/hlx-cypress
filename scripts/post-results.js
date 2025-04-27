@@ -79,6 +79,7 @@ async function main() {
           const duration = test.duration || 0;
           const suiteTitle = suite.title || '';
           const errorMessage = test.err?.message || '';
+          const testRunId = process.env.TEST_RUN_ID || ''; 
 
           // 📸 Leta efter screenshot
           let screenshotBase64 = '';
@@ -116,7 +117,8 @@ async function main() {
               SuiteTitle: suiteTitle,
               ErrorMessage: errorMessage,
               ScreenshotBase64: screenshotBase64,
-              ScreenshotMissing: screenshotMissing // 🔥 Ny flagga!
+              ScreenshotMissing: screenshotMissing,
+              TestRunId: testRunId
             }
           };
 

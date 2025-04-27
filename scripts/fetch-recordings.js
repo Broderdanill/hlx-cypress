@@ -92,7 +92,7 @@ async function main() {
 
     // 🔥 När klart - kör omvandling till Cypress-testformat
     console.log('🚀 Startar konvertering via convert-all-recordings.js...');
-    execSync('node convert-all-recordings.js', { stdio: 'inherit' });
+    execSync('node scripts/convert-all-recordings.js', { stdio: 'inherit' });
     console.log('✅ Konvertering klar!');
 
   } catch (err) {

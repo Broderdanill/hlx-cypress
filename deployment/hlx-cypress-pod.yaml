@@ -7,7 +7,9 @@ spec:
   containers:
     - name: hlx-cypress-container
       image: hlx-cypress:latest
-      command: ["sh", "-c", "node scripts/fetch-recordings.js && npm run test:db"]
+      ports:
+        - containerPort: 3000
+          hostport: 3000
       env:
         - name: HELIX_URL
           value: "http://arserver:8008"
@@ -19,11 +21,22 @@ spec:
           value: "hlx.cypress:Recordings"
         - name: HELIX_FORM
           value: "hlx.cypress:TestResults"
+        - name: PORT
+          value: "3000"
+      resources:
+        limits:
+          memory: "512Mi"
+          cpu: "1"
       volumeMounts:
         - mountPath: /app/cypress/reports
           name: reports-temp
         - mountPath: /app/cypress/e2e
           name: tests-temp
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+        interval: 30s
+        timeout: 5s
+        retries: 3
   volumes:
     - name: reports-temp
       emptyDir: {}
@@ -31,3 +44,4 @@ spec:
       emptyDir: {}
   networks:
     - name: helix
+    
