@@ -152,7 +152,7 @@ async function processQueue() {
   
         process.env.TEST_RUN_ID = TestRunId;
   
-        await new Promise((resolve, reject) => {
+        await new Promise((resolve) => { // <-- INGEN reject här längre
           const cypressProcess = spawn('npx', ['cypress', 'run', '--browser', 'edge', '--headless', '--spec', `cypress/e2e/${safeTestName}.cy.js`]);
   
           cypressProcess.stdout.on('data', (data) => logWithTimestamp(data));
@@ -160,12 +160,11 @@ async function processQueue() {
   
           cypressProcess.on('close', (code) => {
             if (code !== 0) {
-              console.error(`${timestamp()} ❌ Cypress misslyckades med kod ${code}`);
-              reject(new Error(`Cypress failed with code ${code}`));
+              console.error(`${timestamp()} ⚠️ Cypress misslyckades med kod ${code} men fortsätter ändå`);
             } else {
               console.log(`${timestamp()} ✅ Cypress klart`);
-              resolve();
             }
+            resolve(); // <-- Vi kör vidare oavsett resultat
           });
         });
   
@@ -192,9 +191,7 @@ async function processQueue() {
         processQueue(); // ➡️ Kör nästa från kön
       }
     }
-  }
-  
-  
+  }  
 
 // ❤️ Hälsocheck
 app.get('/health', (req, res) => {
