@@ -1,5 +1,5 @@
 {
-  "name": "cypress-db-reporting",
+  "name": "hlx-cypress",
   "version": "1.0.0",
   "description": "Cypress testresultat direkt till MSSQL",
   "main": "index.js",

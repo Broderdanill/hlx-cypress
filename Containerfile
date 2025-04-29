@@ -1,19 +1,17 @@
-# 1. Starta från Node 20
-FROM node:20-bullseye-slim
+# Starta från Node 20 baserad på Debian
+FROM node:20-slim
 
-# 2. Arbetkatalog
+# Arbetkatalog
 WORKDIR /app
 
-# 3. Installera nödvändiga paket + Microsoft Edge + Xvfb och alla beroenden för Cypress GUI/headless
+# Installera nödvändiga paket
 RUN apt-get update && apt-get install -y \
-    curl \
     wget \
-    gnupg \
-    apt-transport-https \
-    software-properties-common \
-    fonts-liberation \
-    libappindicator3-1 \
-    libasound2 \
+    curl \
+    gnupg2 \
+    fontconfig \
+    xdg-utils \
+    alsa-utils \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcups2 \
@@ -25,28 +23,35 @@ RUN apt-get update && apt-get install -y \
     libx11-xcb1 \
     libgbm-dev \
     libgtk-3-0 \
-    lsb-release \
-    xdg-utils \
+    libxcomposite1 \
+    libxdamage1 \
+    libxi6 \
+    libxtst6 \
+    pango1.0-tools \
+    libcairo2 \
     xvfb \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Installera Microsoft Edge
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
     && install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/ \
-    && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-dev.list' \
+    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list \
     && apt-get update \
     && apt-get install -y microsoft-edge-stable \
     && rm microsoft.gpg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Kopiera in hela ditt projekt
+# Kopiera hela projektet
 COPY . .
 
-# 5. Installera Node.js dependencies
+# Installera Node-moduler
 RUN npm install
 
-# 6. Installera Cypress binärfiler
+# Installera Cypress
 RUN npx cypress install
 
-# 5. Sätt default miljövariabler
+# Sätt miljövariabler
 ENV NODE_ENV=production
 ENV HELIX_URL=http://localhost:8008
 ENV HELIX_USER=User
@@ -54,15 +59,12 @@ ENV HELIX_PASS=Password
 ENV HELIX_RECORDING_FORM=hlx.cypress:Recordings
 ENV HELIX_FORM=hlx.cypress:TestResults
 
-# 6. Se till att alla scripts är körbara
+# Ge exekveringsrättigheter till scripts
 RUN chmod +x scripts/*.js
 RUN chmod +x *.js
 
-# 7. Standardkommando när containern startar:
-# CMD ["sh", "-c", "node scripts/fetch-recordings.js && npm run test:db"]
-
-# 9. Öppna porten i containern
+# Öppna API-port
 EXPOSE 3000
 
-# 10. Starta API-servern som CMD
+# Starta API-server
 CMD ["npm", "run", "api"]
