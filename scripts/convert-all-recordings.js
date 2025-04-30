@@ -5,12 +5,10 @@ const inputDir = './recordings';
 const outputDir = './cypress/e2e';
 const logPath = './conversion.log';
 
-// 🛠 Skapa output-dir om den inte finns
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
-// 📝 Loggfunktion med tidsstämpel
 function log(message) {
   const timestamp = new Date().toISOString();
   const line = `[${timestamp}] ${message}\n`;
@@ -18,68 +16,106 @@ function log(message) {
   console.log(line.trim());
 }
 
-// 🎹 Mappa specialtangenter till Cypress-format
 function mapKey(key) {
-  const specialKeys = {
-    Enter: '{enter}',
-    Escape: '{esc}',
-    Backspace: '{backspace}',
-    Tab: '{tab}',
-    ArrowUp: '{uparrow}',
-    ArrowDown: '{downarrow}',
-    ArrowLeft: '{leftarrow}',
-    ArrowRight: '{rightarrow}',
-    Shift: '{shift}',
-    Control: '{ctrl}',
-    Alt: '{alt}',
-    Meta: '{meta}',
+  const keyMap = {
+    Tab: 'Tab',
+    Enter: 'Enter',
+    Escape: 'Escape',
+    Backspace: 'Backspace',
+    ArrowUp: 'ArrowUp',
+    ArrowDown: 'ArrowDown',
+    ArrowLeft: 'ArrowLeft',
+    ArrowRight: 'ArrowRight',
   };
-  return specialKeys[key] || key;
+  return keyMap[key] || key;
 }
 
-// 🧩 Hanterare för alla stegtyper
+function chooseBestSelector(selectors) {
+  if (!selectors || !selectors.length) return null;
+  const flat = selectors.flat();
+  const idSel = flat.find(s => s.startsWith('#'));
+  const xpathSel = flat.find(s => s.startsWith('xpath/'));
+  const ariaSel = flat.find(s => s.startsWith('aria/'));
+  const pierceSel = flat.find(s => s.startsWith('pierce/'));
+  const textSel = flat.find(s => s.startsWith('text/'));
+  const genericSel = flat.find(s => s.length <= 4);
+  return idSel || xpathSel || ariaSel || pierceSel || textSel || genericSel || flat[0];
+}
+
+function getSelectorCode(selector) {
+  if (!selector) throw new Error('Saknar selector');
+  if (selector.startsWith('xpath/')) {
+    const xpath = selector.replace('xpath/', '').replace(/^\/+/, '');
+    return `cy.xpath('//${xpath}', { timeout: 10000 })`;
+  }
+  return `cy.get('${selector}', { timeout: 10000 })`;
+}
+
+function wrapWithFrame(step, codeLine) {
+  if (step.frame && step.frame.length > 0) {
+    const frameIndex = step.frame[0];
+    return `cy.get('iframe').eq(${frameIndex}).its('0.contentDocument.body').should('not.be.empty').then(cy.wrap).within(() => {\n      ${codeLine}\n    });`;
+  }
+  return codeLine;
+}
+
 const handlers = {
   setViewport: (step) => {
     if (!step.width || !step.height) throw new Error('setViewport saknar width eller height');
     return `cy.viewport(${step.width}, ${step.height});`;
   },
-  navigate: (step) => `cy.visit('${step.url}');`,
+  navigate: (step) => {
+    return `cy.visit('${step.url}');\n    cy.wait(2000); // Väntar på att JS ska ladda`;
+  },
   click: (step, selector) => {
-    if (step.target && step.target !== step.url) {
-      log(`ℹ️ Klick öppnar ny flik – ersätts med cy.visit('${step.target}')`);
-      return `cy.visit('${step.target}'); // Öppnade ny flik`;
-    }
-    return `cy.get('${selector}').click();`;
+    if (!selector) throw new Error('click saknar selector');
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.should('exist').first().click();\n    cy.wait(1000);`);
   },
-  doubleClick: (step, selector) => `cy.get('${selector}').dblclick();`,
-  change: (step, selector) => `cy.get('${selector}').clear().type('${step.value}');`,
+  doubleClick: (step, selector) => {
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.dblclick();\n    cy.wait(1000);`);
+  },
+  change: (step, selector) => {
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.clear().type('${step.value}');\n    cy.wait(1000);`);
+  },
   keyDown: (step, selector) => {
-    if (!selector) throw new Error('keyDown saknar selector');
     const key = mapKey(step.key);
-    return `cy.get('${selector}').type('${key}');`;
+    if (key === 'Tab' || key === 'Enter') {
+      return `cy.realPress('${key}');\n    cy.wait(1000);`;
+    }
+    if (!selector) return `cy.realPress('${key}');`;
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.realType('${key}');\n    cy.wait(500);`);
   },
-  keyUp: (step, selector) => {
-    if (!selector) throw new Error('keyUp saknar selector');
-    const key = mapKey(step.key);
-    return `// keyUp: ${key} på ${selector} (Cypress hanterar endast .type())`;
+  keyUp: (step) => `// keyUp: ${step.key} (ignoreras)`,
+  submit: (step, selector) => {
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.submit();\n    cy.wait(1000);`);
   },
-  submit: (step, selector) => `cy.get('${selector}').submit();`,
-  scroll: (step, selector) =>
-    `cy.get('${selector}').scrollTo('${step.scrollPosition?.x || 0}', '${step.scrollPosition?.y || 0}');`,
-  hover: (step, selector) => `cy.get('${selector}').trigger('mouseover');`,
-  waitForElement: (step, selector) => `cy.get('${selector}').should('exist');`,
+  scroll: (step, selector) => {
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.scrollTo('${step.scrollPosition?.x || 0}', '${step.scrollPosition?.y || 0}');`);
+  },
+  hover: (step, selector) => {
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.trigger('mouseover');\n    cy.wait(500);`);
+  },
+  waitForElement: (step, selector) => {
+    const base = getSelectorCode(selector);
+    return wrapWithFrame(step, `${base}.should('exist');`);
+  },
   assert: (step, selector) => {
+    const base = getSelectorCode(selector);
     const assertion = step.assertion || 'exist';
     const value = step.value;
-    if (value) {
-      return `cy.get('${selector}').should('${assertion}', '${value}');`;
-    } else {
-      return `cy.get('${selector}').should('${assertion}');`;
-    }
-  },
+    return wrapWithFrame(step, value
+      ? `${base}.should('${assertion}', '${value}');`
+      : `${base}.should('${assertion}');`);
+  }
 };
 
-// 🚀 Kör igenom alla JSON-filer i inputDir
 fs.readdirSync(inputDir).forEach(file => {
   if (file.endsWith('.json')) {
     const inputPath = path.join(inputDir, file);
@@ -89,15 +125,14 @@ fs.readdirSync(inputDir).forEach(file => {
     try {
       const recording = JSON.parse(fs.readFileSync(inputPath, 'utf-8'));
       const steps = recording.steps || [];
-
-      // 📛 Använd recording.title om det finns, annars baseName
       const recordingName = recording.title || baseName;
 
       let codeLines = [];
+      codeLines.push("import 'cypress-xpath';");
+      codeLines.push("import 'cypress-real-events/support';");
       codeLines.push(`describe('${recordingName}', () => {`);
       codeLines.push(`  it('${recordingName}', () => {`);
 
-      // 🔲 Lägg till viewport om inspelningen innehåller det
       if (recording.viewport && recording.viewport.width && recording.viewport.height) {
         const { width, height } = recording.viewport;
         codeLines.push(`    cy.viewport(${width}, ${height});`);
@@ -105,8 +140,7 @@ fs.readdirSync(inputDir).forEach(file => {
       }
 
       steps.forEach((step, index) => {
-        const selector = step.selectors?.[0]?.[0];
-
+        const selector = chooseBestSelector(step.selectors);
         if (handlers[step.type]) {
           try {
             const line = handlers[step.type](step, selector);
@@ -126,7 +160,6 @@ fs.readdirSync(inputDir).forEach(file => {
 
       fs.writeFileSync(outputPath, codeLines.join('\n'), 'utf-8');
       fs.unlinkSync(inputPath);
-
       log(`✅ Konverterade och raderade: ${file}`);
     } catch (err) {
       log(`❌ Fel vid konvertering av ${file}: ${err.message}`);

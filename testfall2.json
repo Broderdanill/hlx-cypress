@@ -1,0 +1,191 @@
+{
+    "title": "Recording 4/30/2025 at 8:42:10 PM",
+    "steps": [
+        {
+            "type": "setViewport",
+            "width": 992,
+            "height": 1094,
+            "deviceScaleFactor": 1,
+            "isMobile": false,
+            "hasTouch": false,
+            "isLandscape": false
+        },
+        {
+            "type": "navigate",
+            "url": "http://midtier:8080/arsys/shared/login.jsp?/arsys/home",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://midtier:8080/arsys/shared/login.jsp?/arsys/home",
+                    "title": "MidTier - Login"
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#username-id"
+                ],
+                [
+                    "xpath///*[@id=\"username-id\"]"
+                ],
+                [
+                    "pierce/#username-id"
+                ]
+            ],
+            "offsetY": 11.5,
+            "offsetX": 87
+        },
+        {
+            "type": "change",
+            "value": "dice",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#username-id"
+                ],
+                [
+                    "xpath///*[@id=\"username-id\"]"
+                ],
+                [
+                    "pierce/#username-id"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Tab"
+        },
+        {
+            "type": "keyUp",
+            "key": "Tab",
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "C0mmand3r",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#pwd-id"
+                ],
+                [
+                    "xpath///*[@id=\"pwd-id\"]"
+                ],
+                [
+                    "pierce/#pwd-id"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Enter",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://midtier:8080/arsys/forms/arserver/AR+System+Customizable+Home+Page/Default+Administrator+View/?cacheid=fe5b7fdd",
+                    "title": ""
+                }
+            ]
+        },
+        {
+            "type": "keyUp",
+            "key": "Enter",
+            "target": "main",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "https://devtools.azureedge.net/serve_file/@4215a10badb66dfc30740c51223c7cd6a6d557fc/third_party/webhint/worker_frame.html",
+                    "title": ""
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/OK"
+                ],
+                [
+                    "a"
+                ],
+                [
+                    "xpath///*[@id=\"PopupMsgFooter\"]/a"
+                ],
+                [
+                    "pierce/a"
+                ],
+                [
+                    "text/OK"
+                ]
+            ],
+            "offsetY": 2,
+            "offsetX": 19.2109375,
+            "frame": [
+                1
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "#WIN_0_304316340 > div"
+                ],
+                [
+                    "xpath///*[@id=\"WIN_0_304316340\"]/div"
+                ],
+                [
+                    "pierce/#WIN_0_304316340 > div"
+                ]
+            ],
+            "offsetY": 71,
+            "offsetX": 16
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/AR System Administration Console",
+                    "aria/[role=\"generic\"]"
+                ],
+                [
+                    "div.VNavHover1 span"
+                ],
+                [
+                    "xpath///*[@id=\"FormContainer\"]/div[5]/div/div[2]/div/div[3]/a/span"
+                ],
+                [
+                    "pierce/div.VNavHover1 span"
+                ],
+                [
+                    "text/AR System Administration Console"
+                ]
+            ],
+            "offsetY": 0,
+            "offsetX": 82,
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://midtier:8080/arsys/forms/arserver/AR+System+Administration%3A+Console/ARSystemConsole/?cacheid=5a9fe3a4",
+                    "title": ""
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,216 @@
+{
+    "title": "Testfall3",
+    "steps": [
+        {
+            "type": "setViewport",
+            "width": 992,
+            "height": 1094,
+            "deviceScaleFactor": 1,
+            "isMobile": false,
+            "hasTouch": false,
+            "isLandscape": false
+        },
+        {
+            "type": "navigate",
+            "url": "http://midtier:8080/arsys/shared/login.jsp?/arsys/home",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://midtier:8080/arsys/shared/login.jsp?/arsys/home",
+                    "title": "MidTier - Login"
+                }
+            ]
+        },
+        {
+            "type": "change",
+            "value": "dice",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#username-id"
+                ],
+                [
+                    "xpath///*[@id=\"username-id\"]"
+                ],
+                [
+                    "pierce/#username-id"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "C0mmand3r",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#pwd-id"
+                ],
+                [
+                    "xpath///*[@id=\"pwd-id\"]"
+                ],
+                [
+                    "pierce/#pwd-id"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "#loginbody"
+                ],
+                [
+                    "xpath///*[@id=\"loginbody\"]"
+                ],
+                [
+                    "pierce/#loginbody"
+                ]
+            ],
+            "offsetY": 510,
+            "offsetX": 372
+        },
+        {
+            "type": "change",
+            "value": "dice",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#username-id"
+                ],
+                [
+                    "xpath///*[@id=\"username-id\"]"
+                ],
+                [
+                    "pierce/#username-id"
+                ],
+                [
+                    "text/dice"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Tab"
+        },
+        {
+            "type": "keyUp",
+            "key": "Tab",
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "C0mmand3r",
+            "selectors": [
+                [
+                    "aria/"
+                ],
+                [
+                    "#pwd-id"
+                ],
+                [
+                    "xpath///*[@id=\"pwd-id\"]"
+                ],
+                [
+                    "pierce/#pwd-id"
+                ],
+                [
+                    "text/C0mmand3r"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Enter"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/OK"
+                ],
+                [
+                    "a"
+                ],
+                [
+                    "xpath///*[@id=\"PopupMsgFooter\"]/a"
+                ],
+                [
+                    "pierce/a"
+                ],
+                [
+                    "text/OK"
+                ]
+            ],
+            "offsetY": 11,
+            "offsetX": 21.2109375,
+            "frame": [
+                1
+            ]
+        },
+        {
+            "type": "navigate",
+            "url": "http://midtier:8080/arsys/forms/arserver/User/Default+Admin+View1/?cacheid=d847738b",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://midtier:8080/arsys/forms/arserver/User/Default+Admin+View1/?cacheid=d847738b",
+                    "title": ""
+                }
+            ]
+        },
+        {
+            "type": "change",
+            "value": "%",
+            "selectors": [
+                [
+                    "aria/Login Name"
+                ],
+                [
+                    "#arid_WIN_0_101"
+                ],
+                [
+                    "xpath///*[@id=\"arid_WIN_0_101\"]"
+                ],
+                [
+                    "pierce/#arid_WIN_0_101"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Search[role=\"link\"]",
+                    "aria/[role=\"generic\"]"
+                ],
+                [
+                    "#TBsearchsavechanges"
+                ],
+                [
+                    "xpath///*[@id=\"TBsearchsavechanges\"]"
+                ],
+                [
+                    "pierce/#TBsearchsavechanges"
+                ]
+            ],
+            "offsetY": 11.25,
+            "offsetX": 22.8046875
+        }
+    ]
+}
